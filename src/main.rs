@@ -38,6 +38,14 @@ struct State {
     crossfade: f32,
 }
 
+fn clamp(a: f32) -> f32 {
+    f32::max(f32::min(a, 1.), 0.)
+}
+
+fn mix(a: f32, b: f32, amount: f32) -> f32 {
+    clamp(2. * amount) * b + clamp(-2. * amount + 2.) * a
+}
+
 fn main() {
     let application = Application::new(
         Some("com.github.bennetthardwick.rust-mixer"),
@@ -198,8 +206,8 @@ fn main() {
                 .zip(b_l.iter().zip(b_r.iter()))
                 .zip(out_l.iter_mut().zip(out_r.iter_mut()))
             {
-                *l = (a_l * state.a_l) + (b_l * state.b_l);
-                *r = (a_r * state.a_r) + (b_r * state.b_r);
+                *l = mix(a_l * state.a_l, b_l * state.b_l, state.crossfade / 2. + 0.5);
+                *r = mix(a_r * state.a_r, b_r * state.b_r, state.crossfade / 2. + 0.5);
             }
 
             jack::Control::Continue
