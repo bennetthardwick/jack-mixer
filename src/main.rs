@@ -39,9 +39,11 @@ struct State {
 }
 
 fn main() {
-    let application =
-        Application::new(Some("com.github.bennetthardwick.rust-mixer"), Default::default())
-            .expect("failed to initialize GTK application");
+    let application = Application::new(
+        Some("com.github.bennetthardwick.rust-mixer"),
+        Default::default(),
+    )
+    .expect("failed to initialize GTK application");
 
     let (send_command, commands) = bounded::<Message>(10);
 
@@ -67,11 +69,9 @@ fn main() {
         {
             let send_command = send_command.clone();
             slider.connect_value_changed(move |scale| {
-                if let Err(e) =
-                    send_command.try_send(Message::Volume((Channel::AL, scale.get_value() as f32)))
-                {
-                    println!("An error occurred in AL, {}", e);
-                }
+                send_command
+                    .send(Message::Volume((Channel::AL, scale.get_value() as f32)))
+                    .unwrap();
             });
         }
 
@@ -79,11 +79,9 @@ fn main() {
         {
             let send_command = send_command.clone();
             slider.connect_value_changed(move |scale| {
-                if let Err(e) =
-                    send_command.try_send(Message::Volume((Channel::AR, scale.get_value() as f32)))
-                {
-                    println!("An error occurred in AR, {}", e);
-                }
+                send_command
+                    .send(Message::Volume((Channel::AR, scale.get_value() as f32)))
+                    .unwrap();
             });
         }
 
@@ -91,11 +89,9 @@ fn main() {
         {
             let send_command = send_command.clone();
             slider.connect_value_changed(move |scale| {
-                if let Err(e) =
-                    send_command.try_send(Message::Volume((Channel::BL, scale.get_value() as f32)))
-                {
-                    println!("An error occurred in BL, {}", e);
-                }
+                send_command
+                    .send(Message::Volume((Channel::BL, scale.get_value() as f32)))
+                    .unwrap();
             });
         }
 
@@ -103,11 +99,9 @@ fn main() {
         {
             let send_command = send_command.clone();
             slider.connect_value_changed(move |scale| {
-                if let Err(e) =
-                    send_command.try_send(Message::Volume((Channel::BR, scale.get_value() as f32)))
-                {
-                    println!("An error occurred in BR, {}", e);
-                }
+                send_command
+                    .send(Message::Volume((Channel::BR, scale.get_value() as f32)))
+                    .unwrap();
             });
         }
 
@@ -204,10 +198,8 @@ fn main() {
                 .zip(b_l.iter().zip(b_r.iter()))
                 .zip(out_l.iter_mut().zip(out_r.iter_mut()))
             {
-
                 *l = (a_l * state.a_l) + (b_l * state.b_l);
                 *r = (a_r * state.a_r) + (b_r * state.b_r);
-
             }
 
             jack::Control::Continue
